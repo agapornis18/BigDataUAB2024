@@ -1,0 +1,47 @@
+import requests
+from bs4 import BeautifulSoup # per processar les respostes html
+import time
+import pandas as pd
+import glob
+import spotipy
+import json # Per processar les respostes de la API
+from spotipy.oauth2 import SpotifyClientCredentials # Per generar les credencials d'spotify
+
+
+
+
+
+#llibreria per parsejar,per fer scrapping beautifulsoup4, explicar
+
+rango = range(1)
+
+def extract_wiki(rango):
+    for r in rango:
+        try:
+            resposta = requests.get(
+                f"https://es.wikipedia.org/wiki/La_Voz_(programa_de_televisi%C3%B3n_espa%C3%B1ol)?parametro={r}")
+            print(resposta)
+            codi_web = resposta.text
+            """
+            convertir codi web en objectes linia codi sota, amb atribut html.parser identifica el contingut del codi web converteix en
+            objecte i et permet trobar coses (dentre tot el codi busca taula i retornam aixo, ex: troba la taula de concursantes finales
+            i retornamela.
+            """
+            soup = BeautifulSoup(codi_web,'html.parser') #lo procesamos como html
+            final = soup.find('span', id="Resumen")
+            tabla = final.find_next("table")
+            df = pd.read_html(str(tabla))[0]
+            df = df.drop(['Backstage', 'Presentador', 'Coaches (Orden de las Sillas)', 'Cadena', 'Entrenador Ganador'], axis=1)
+            df = df.drop([10], axis=0)
+
+            # encuentra la primera tabla que hay despues de x elemento
+
+            print(df)
+            df.to_excel(f"final-{r}.xlsx", index=True)
+            time.sleep(1)
+        except AttributeError:
+            print(f"Problemes en {r}")
+
+extract_wiki(rango)
+
+#quitamos almohadilla para no seguir escrapejant, quitas y funciona
