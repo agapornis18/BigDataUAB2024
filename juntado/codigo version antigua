@@ -1,0 +1,50 @@
+import glob
+import json
+import pandas as pd
+import spotipy
+from spotipy.oauth2 import SpotifyClientCredentials
+
+# Inicializar cliente de autenticación de Spotify
+client_credentials_manager = SpotifyClientCredentials(client_id='b486662ed48c495ea920f68349468d18',client_secret='a1da923f2c2d4882b3fab9cd0c0ca44b')
+spotify = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
+
+files = glob.glob("raw_data/*.json")
+
+llista = []
+
+for file in files:
+    print(file)
+
+    with open(f'{file}', 'r', encoding='utf-8') as f:
+        datos = json.load(f)
+        pais = file.split("-")[0].split("\\")[1]
+        print(pais)
+
+        for item in datos["items"]:
+            artists = [artists["name"] for artists in item["track"]["album"]["artists"]]
+            track_name = item["track"]["name"]
+            popularity = item["track"]["popularity"]
+            playlist = pais
+            tupla = (artists,track_name,popularity,playlist)
+            llista.append(tupla)
+
+
+df = pd.DataFrame(llista, columns =['artistas', 'track_name', 'popularity', "playlist"])
+df.to_excel(f"excels_de_playslist/playlist_de_playlist.xlsx", index=False)
+
+files = glob.glob("artist_raw_data/*.json")
+
+llista = []
+
+for file in files:
+    with open(f'{file}', 'r', encoding='utf-8') as f:
+        datos = json.load(f)
+        name = datos["name"]
+        popularity = datos["popularity"]
+        genres = ", ".join(datos["genres"])
+        followers = datos["followers"]["total"]
+        tupla = (name, popularity, genres, followers)
+        llista.append(tupla)
+
+df = pd.DataFrame(llista, columns =['nombre', 'popularidad', 'generos', "followers"])
+df.to_excel(f"excels_de_playslist/artistas_de_playlist.xlsx", index=False)
