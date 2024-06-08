@@ -2,6 +2,7 @@ import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 import json
 import glob
+import pandas as pd
 
 api_client_id = ""
 api_client_secret = ""
